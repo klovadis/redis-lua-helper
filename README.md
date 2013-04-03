@@ -85,6 +85,7 @@ something else.
 Load one or more Lua script files into the instance cache. The callback function should expect an
 error argument and an array of loaded script files. Examples:
 
+```javascript
 	// load a single script
     rlh.load('myscript', function (err, scripts) {} );
 
@@ -93,6 +94,7 @@ error argument and an array of loaded script files. Examples:
 
     // filenames can be provided as an array as well
 	rlh.load(['myscript3', 'myscript4'], function (err, scripts) {} );
+```
 
 Notice: Right now, checking for circular dependencies may cause problems if you try to call `load`
 multiple times in a row before awaiting the first call to finish. To avoid this, you should place
@@ -104,54 +106,107 @@ all filenames that you wish to load in an array and call `load` once.
 Loads all script files in a given directory, relative to the root directory. Does not include files 
 in subdirectories. If the dirpath argument is omitted, the root directory will be used instead.
 
+```javascript
     // load all files in the root directory (not including subdirectories)
 	rlh.loadDir( function (err, scripts) {} );
 
 	// load all files in /root/subdir
 	rlh.loadDir( 'subdir', function (err, scripts) {} );
-
+```
 
 ## RLH#code ( scriptName )
 
 Returns the code of a previously loaded script. You must load a script first before you can access
 its code.
 
+```javascript
     var code = rlh.code('myscript');
-
+```
 
 ## RLH#shasum ( scriptName )
 
 Returns the shasum of a previously loaded script. You must load a script first before you can access
 its shasum.
 
+```javascript
 	// returns the scripts shasum
 	// i.e. 6b1bf486c81ceb7edf3c093f4c48582e38c0e791
     var shasum = rlh.shasum('myscript');
+```
 
+## RLH#keys ( scriptName )
+
+Returns the number of expected KEYS of a previously loaded script. You must load a script first before 
+you can access its keys.
+
+```javascript
+	// returns the number of keys that a script expects
+	// i.e. the script below will return 2
+    var keys = rlh.keys('myscript');
+```
+
+```lua
+    -- example script, rlh.keys() will return 2
+    local foo = KEYS[1]
+    local bar = KEYS[2]
+```
+
+Note that the keys are retrieved by stupidly looking for the highest number that is found in the script code,
+even if you comment out a line of code that contains a high number. Dynamic values are not supported;
+avoid confusion by keeping KEYS[*] at a single place, i.e. at the beginning of your file.
+
+```lua
+    -- example script two, rlh.keys() will return 99
+    local foo = KEYS[1]
+    -- commented line contains KEYS[99]
+```
 
 ## RLH#clearCache()
 
 Clears the entire cache, is the same as creating a fresh instance.
 
+```javascript
     // clear the script cache
 	rlh.clearCache();
-
+```
 
 # TODO
 
 - Create a loading queue so you can issue multiple load commands in parallel.
-- Scan code for KEYS[*] and store information to be accessed via helper.keys('script').
 - Allow to create compiled files and store them in filesystem for debugging and caching.
 - Add bindings for popular redis clients, .sync() and .eval(), with config options
 to provide a 'client' and 'adapter' (=client type).
-
+- Reformat README.md for linebreaks -.-
 
 # Changelog
+
+## 0.2.0
+
+Added RLH#keys() functionality by scanning through script code and picking the highest
+number that is written using KEYS[*] so you can pass it to your redis client.
 
 ## 0.1.0
 
 Initial release.
 
-# License
+# License: MIT License
 
-MIT License, see LICENSE file.
+Copyright (C) 2013 Geerten van Meel
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.

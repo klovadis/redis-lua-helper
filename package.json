@@ -1,6 +1,6 @@
 {
   "name": "redis-lua-helper",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "author": "Geerten van Meel",
   "description": "A helper package to load lua scripts for redis featuring a #include macro",
   "main": "./lib/index.js",
